@@ -2,67 +2,90 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'teams_model.dart';
 
-class PieChartSampleTeam extends StatelessWidget {
-  final Team team;
+class PieChartSampleTeamComparison extends StatelessWidget {
   final String dataType;
+  final List<Team> teamData;
 
-  PieChartSampleTeam({required this.team, required this.dataType});
-
-  // Función para reducir el texto si es necesario
-  String truncateText(String text, int maxLength) {
-    return text.length <= maxLength
-        ? text
-        : '${text.substring(0, maxLength)}...';
-  }
-
-  // Función para crear las secciones del gráfico circular
-  PieChartSectionData createSection(double value, Color color, String label) {
-    return PieChartSectionData(
-      value: value,
-      color: color,
-      title:
-          '${value.toInt()}\n${truncateText(label, 10)}', // Mostrar solo números enteros
-      radius: 50,
-      titleStyle: const TextStyle(
-        fontSize: 12, // Tamaño de texto más pequeño
-        fontWeight: FontWeight.bold,
-        color: Colors.white,
-      ),
-      titlePositionPercentageOffset: 0.6, // Ajustar posición del texto
-    );
-  }
+  PieChartSampleTeamComparison(
+      {required this.dataType, required this.teamData});
 
   @override
   Widget build(BuildContext context) {
     List<PieChartSectionData> sections = [];
 
-    if (dataType == 'matches') {
-      sections = [
-        createSection(team.wins.toDouble(), Colors.green, 'Victorias'),
-        createSection(team.draws.toDouble(), Colors.amber, 'Empates'),
-        createSection(team.losses.toDouble(), Colors.red, 'Derrotas'),
-      ];
-    } else if (dataType == 'goals') {
-      sections = [
-        createSection(team.goals_scored.toDouble(), Colors.blue, 'Anotados'),
-        createSection(
-            team.goals_conceded.toDouble(), Colors.orange, 'Recibidos'),
-      ];
-    } else {
-      sections = [
-        createSection(team.corners_total_home.toDouble(), Colors.blue, 'Casa'),
-        createSection(
-            team.corners_total_away.toDouble(), Colors.orange, 'Fuera'),
-      ];
+    for (int i = 0; i < teamData.length; i++) {
+      Team team = teamData[i];
+      double value = 0;
+      if (dataType == 'matches') {
+        value = team.matches_played.toDouble();
+      } else if (dataType == 'goals') {
+        value = team.goals_scored.toDouble();
+      } else if (dataType == 'cards') {
+        value = team.cards_total.toDouble();
+      } else if (dataType == 'averageGoals') {
+        value = team.matches_played > 0
+            ? team.goals_scored.toDouble() / team.matches_played
+            : 0;
+      } else if (dataType == 'averageCards') {
+        value = team.matches_played > 0
+            ? team.cards_total.toDouble() / team.matches_played
+            : 0;
+      }
+      sections.add(PieChartSectionData(
+        value: value,
+        color: Colors.primaries[i % Colors.primaries.length],
+        title: value.toStringAsFixed(2),
+        radius: 50,
+        titleStyle: const TextStyle(
+            fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white),
+      ));
     }
 
-    return PieChart(
-      PieChartData(
-        sections: sections,
-        sectionsSpace: 2,
-        centerSpaceRadius: 40,
-        pieTouchData: PieTouchData(touchCallback: (pieTouchResponse) {}),
-      ),
+    return Column(
+      children: [
+        Expanded(
+          child: Row(
+            children: [
+              Expanded(
+                flex: 2,
+                child: PieChart(
+                  PieChartData(
+                    sections: sections,
+                    sectionsSpace: 2,
+                    centerSpaceRadius: 40,
+                    pieTouchData:
+                        PieTouchData(touchCallback: (pieTouchResponse) {}),
+                  ),
+                ),
+              ),
+              Expanded(
+                flex: 1,
+                child: ListView.builder(
+                  itemCount: teamData.length,
+                  itemBuilder: (context, index) {
+                    final team = teamData[index];
+                    return Row(
+                      children: [
+                        Container(
+                          width: 20,
+                          height: 20,
+                          color:
+                              Colors.primaries[index % Colors.primaries.length],
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          '${team.season}',
+                          style: const TextStyle(fontSize: 14),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

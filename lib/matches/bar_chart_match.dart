@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'player_model.dart';
+import 'match_model.dart';
 
-class BarChartSamplePlayerComparison extends StatelessWidget {
+class BarChartSampleMatchComparison extends StatelessWidget {
   final String dataType;
-  final List<Player> playerData;
+  final List<Match> matchData;
 
-  BarChartSamplePlayerComparison(
-      {required this.dataType, required this.playerData});
+  BarChartSampleMatchComparison(
+      {required this.dataType, required this.matchData});
 
   @override
   Widget build(BuildContext context) {
@@ -29,21 +29,20 @@ class BarChartSamplePlayerComparison extends StatelessWidget {
       );
     }
 
-    for (int i = 0; i < playerData.length; i++) {
-      Player player = playerData[i];
+    for (int i = 0; i < matchData.length; i++) {
+      Match match = matchData[i];
       double value = 0;
-      if (dataType == 'averageGoals') {
-        value = player.appearances_overall > 0
-            ? player.goalsOverall / player.appearances_overall
-            : 0;
-      } else if (dataType == 'averageAssists') {
-        value = player.appearances_overall > 0
-            ? player.assistsOverall / player.appearances_overall
-            : 0;
-      } else if (dataType == 'averageYellowCards') {
-        value = player.appearances_overall > 0
-            ? player.yellowCardsOverall / player.appearances_overall
-            : 0;
+      if (dataType == 'goals') {
+        value =
+            double.parse(match.homeTeamGoal) + double.parse(match.awayTeamGoal);
+      } else if (dataType == 'corners') {
+        value = double.parse(match.homeTeamCorner) +
+            double.parse(match.awayTeamCorner);
+      } else if (dataType == 'cards') {
+        value = double.parse(match.homeTeamYellowCards) +
+            double.parse(match.homeTeamRedCards) +
+            double.parse(match.awayTeamYellowCards) +
+            double.parse(match.awayTeamRedCards);
       }
       barGroups.add(createBarChartGroup(i, value, Colors.blue));
       if (value > maxY) maxY = value;
@@ -63,7 +62,7 @@ class BarChartSamplePlayerComparison extends StatelessWidget {
             tooltipMargin: 0,
             getTooltipItem: (group, groupIndex, rod, rodIndex) {
               return BarTooltipItem(
-                rod.y.toStringAsFixed(2),
+                rod.y.toInt().toString(),
                 const TextStyle(
                   color: Colors.black,
                   fontWeight: FontWeight.bold,
@@ -98,8 +97,8 @@ class BarChartSamplePlayerComparison extends StatelessWidget {
         interval: 1,
         rotateAngle: 45,
         getTitles: (double value) {
-          if (value.toInt() >= 0 && value.toInt() < playerData.length) {
-            return playerData[value.toInt()].season.toString();
+          if (value.toInt() >= 0 && value.toInt() < matchData.length) {
+            return matchData[value.toInt()].dateGMT;
           } else {
             return '';
           }
@@ -114,13 +113,8 @@ class BarChartSamplePlayerComparison extends StatelessWidget {
         ),
         margin: 10,
         reservedSize: 28,
-        interval: 0.5,
         getTitles: (value) {
-          if (value % 0.5 == 0) {
-            return value.toString();
-          } else {
-            return '';
-          }
+          return value.toString();
         },
       ),
       topTitles: SideTitles(showTitles: false),

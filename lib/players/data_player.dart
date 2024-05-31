@@ -4,7 +4,6 @@ import 'package:csv/csv.dart';
 import 'player_model.dart'; // Asegúrate de que este archivo define la clase Player
 
 Future<List<Player>> loadAllPlayerData() async {
-  // Reemplaza con la URL base de tu proyecto Supabase
   String supabaseUrl =
       'https://eksgwihmgfwwanfrxnmg.supabase.co/storage/v1/object/public/Data/players_csv';
   List<String> fileNames = [
@@ -29,7 +28,8 @@ Future<List<Player>> loadAllPlayerData() async {
 
     if (response.statusCode == 200) {
       // Decodificar la respuesta como UTF-8
-      final String csvString = utf8.decode(response.bodyBytes);
+      final String csvString = utf8.decode(response.bodyBytes,
+          allowMalformed: true); // Permitir malformaciones
       List<List<dynamic>> csvData =
           const CsvToListConverter(fieldDelimiter: ';').convert(csvString);
 

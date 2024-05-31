@@ -3,21 +3,22 @@ import 'package:http/http.dart' as http;
 import 'package:csv/csv.dart';
 import 'teams_model.dart'; // Asegúrate de que este archivo define la clase Team
 
-Future<List<Team>> loadTeamData() async {
+Future<List<Team>> loadAllTeamData() async {
   // Reemplaza con la URL base de tu proyecto Supabase
-  String supabaseUrl = 'https://eksgwihmgfwwanfrxnmg.supabase.co/storage/v1/object/public/Data/teams_csv';
+  String supabaseUrl =
+      'https://eksgwihmgfwwanfrxnmg.supabase.co/storage/v1/object/public/Data/teams_csv';
   List<String> fileNames = [
-    'teams_2013.csv',
-    'teams_2014.csv',
-    'teams_2015.csv',
-    'teams_2016.csv',
-    'teams_2017.csv',
-    'teams_2018.csv',
-    'teams_2019.csv',
-    'teams_2020.csv',
-    'teams_2021.csv',
-    'teams_2022.csv',
-    'teams_2023.csv',
+    'teams 2013.csv',
+    'teams 2014.csv',
+    'teams 2015.csv',
+    'teams 2016.csv',
+    'teams 2017.csv',
+    'teams 2018.csv',
+    'teams 2019.csv',
+    'teams 2020.csv',
+    'teams 2021.csv',
+    'teams 2022.csv',
+    'teams 2023.csv',
   ];
 
   List<Team> allTeams = [];
@@ -29,9 +30,11 @@ Future<List<Team>> loadTeamData() async {
     if (response.statusCode == 200) {
       // Decodificar la respuesta como UTF-8
       final String csvString = utf8.decode(response.bodyBytes);
-      List<List<dynamic>> csvData = const CsvToListConverter(fieldDelimiter: ';').convert(csvString);
+      List<List<dynamic>> csvData =
+          const CsvToListConverter(fieldDelimiter: ';').convert(csvString);
 
-      for (List<dynamic> row in csvData.skip(1)) { // Asumiendo que la primera fila es el encabezado
+      for (List<dynamic> row in csvData.skip(1)) {
+        // Asumiendo que la primera fila es el encabezado
         allTeams.add(Team(
           commonName: row[0].toString(),
           season: int.tryParse(row[1].toString()) ?? 0,
@@ -61,8 +64,8 @@ Future<List<Team>> loadTeamData() async {
         ));
       }
     } else {
-      // Manejar el caso de error al cargar el archivo
-      throw Exception('Failed to load team data from Supabase Storage for file $fileName');
+      throw Exception(
+          'Failed to load team data from Supabase Storage for file $fileName');
     }
   }
 

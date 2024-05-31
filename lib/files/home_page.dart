@@ -1,10 +1,8 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'package:flutter/material.dart';
-import 'package:flutter_application_2/teams/team_by_year.dart';
+import 'package:flutter_application_2/players/player_selection.dart';
+import 'package:flutter_application_2/teams/team_selection_screen.dart';
 import 'package:flutter_application_2/files/user_preferences.dart';
-import '../matches/match_by_year.dart';
-import '../players/player_by_year.dart';
+import '../matches/match_selection_screen.dart'; // Importa la nueva pantalla de selección de partidos
 import 'login.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -42,7 +40,7 @@ class HomeScreen extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => YearSelectionScreenPlayers(),
+                    builder: (context) => PlayerSelectionScreen(),
                   ),
                 );
               },
@@ -55,7 +53,7 @@ class HomeScreen extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => YearSelectionScreenTeams(),
+                    builder: (context) => TeamSelectionScreen(),
                   ),
                 );
               },
@@ -68,7 +66,8 @@ class HomeScreen extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => YearSelectionScreenMatches(),
+                    builder: (context) =>
+                        MatchSelectionScreen(), // Usa la nueva pantalla de selección de partidos
                   ),
                 );
               },
@@ -81,7 +80,6 @@ class HomeScreen extends StatelessWidget {
                   await UserPreferences.setLoggedIn(false);
                   Navigator.of(context).pop();
                   Navigator.of(context).pushAndRemoveUntil(
-                    // ignore: prefer_const_constructors
                     MaterialPageRoute(builder: (context) => HomeScreen()),
                     (Route<dynamic> route) => false,
                   );
@@ -126,10 +124,11 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _createDrawerItem(
-      {required IconData icon,
-      required String text,
-      required GestureTapCallback onTap}) {
+  Widget _createDrawerItem({
+    required IconData icon,
+    required String text,
+    required GestureTapCallback onTap,
+  }) {
     return ListTile(
       leading: Icon(icon),
       title: Text(text),

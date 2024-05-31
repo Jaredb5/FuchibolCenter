@@ -1,5 +1,3 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -9,59 +7,80 @@ import 'match_detail.dart';
 import 'match_search.dart';
 
 class MatchScreen extends StatelessWidget {
-  final String year;
   final String supabaseUrl =
-      'https://eksgwihmgfwwanfrxnmg.supabase.co/storage/v1/object/public/Data/matches_csv'; // Reemplaza con tu URL de Supabase
+      'https://eksgwihmgfwwanfrxnmg.supabase.co/storage/v1/object/public/Data/matches_csv';
 
-  const MatchScreen({required this.year, Key? key}) : super(key: key);
+  const MatchScreen({Key? key}) : super(key: key);
 
-  Future<List<Match>> loadMatchesForYear(String year) async {
-    var fileUrl =
-        '$supabaseUrl/matches $year.csv'; // Asegúrate de que esta URL es correcta
-    var response = await http.get(Uri.parse(fileUrl));
+  Future<List<Match>> loadAllMatches() async {
+    List<String> fileNames = [
+      'matches_2013.csv',
+      'matches_2014.csv',
+      'matches_2015.csv',
+      'matches_2016.csv',
+      'matches_2017.csv',
+      'matches_2018.csv',
+      'matches_2019.csv',
+      'matches_2020.csv',
+      'matches_2021.csv',
+      'matches_2022.csv',
+      'matches_2023.csv',
+    ];
 
-    if (response.statusCode == 200) {
-      // Decodificar la respuesta como UTF-8
-      final String csvString = utf8.decode(response.bodyBytes);
-      List<List<dynamic>> csvData =
-          const CsvToListConverter(fieldDelimiter: ';').convert(csvString);
-      List<Match> matches = [];
-      for (List<dynamic> row in csvData.skip(1)) {
-        // Asumiendo que la primera fila es el encabezado
-        matches.add(Match(
-          dateGMT: row[0].toString(),
-          homeTeam: row[1].toString(),
-          awayTeam: row[2].toString(),
-          homeTeamGoal: row[3].toString(),
-          awayTeamGoal: row[4].toString(),
-          homeTeamCorner: row[6].toString(),
-          awayTeamCorner: row[7].toString(),
-          homeTeamYellowCards: row[8].toString(),
-          homeTeamRedCards: row[9].toString(),
-          awayTeamYellowCards: row[10].toString(),
-          awayTeamRedCards: row[11].toString(),
-          stadiumName: row[12].toString(),
-          // Asegúrate de que los índices coincidan con las columnas de tu CSV
-        ));
+    List<Match> allMatches = [];
+
+    for (String fileName in fileNames) {
+      var fileUrl = '$supabaseUrl/$fileName';
+      var response = await http.get(Uri.parse(fileUrl));
+
+      if (response.statusCode == 200) {
+        final String csvString = utf8.decode(response.bodyBytes);
+        List<List<dynamic>> csvData =
+            const CsvToListConverter(fieldDelimiter: ';').convert(csvString);
+        for (List<dynamic> row in csvData.skip(1)) {
+          allMatches.add(Match(
+            dateGMT: row[0].toString(),
+            homeTeam: row[1].toString(),
+            awayTeam: row[2].toString(),
+            homeTeamGoal: row[3].toString(),
+            awayTeamGoal: row[4].toString(),
+            homeTeamCorner: row[6].toString(),
+            awayTeamCorner: row[7].toString(),
+            homeTeamYellowCards: row[8].toString(),
+            homeTeamRedCards: row[9].toString(),
+            awayTeamYellowCards: row[10].toString(),
+            awayTeamRedCards: row[11].toString(),
+            homeTeamShots: row[12].toString(),
+            awayTeamShots: row[13].toString(),
+            homeTeamShotsOnTarget: row[14].toString(),
+            awayTeamShotsOnTarget: row[15].toString(),
+            homeTeamFouls: row[16].toString(),
+            awayTeamFouls: row[17].toString(),
+            homeTeamPossession: row[18].toString(),
+            awayTeamPossession: row[19].toString(),
+            stadiumName: row[20].toString(),
+          ));
+        }
+      } else {
+        throw Exception(
+            'Failed to load match data from Supabase Storage for file $fileName');
       }
-      return matches;
-    } else {
-      throw Exception(
-          'Failed to load match data from Supabase Storage for year $year');
     }
+
+    return allMatches;
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Partidos $year'),
+        title: const Text('Partidos'),
         backgroundColor: Colors.redAccent,
         actions: [
           IconButton(
             icon: const Icon(Icons.search),
             onPressed: () async {
-              final matches = await loadMatchesForYear(year);
+              final matches = await loadAllMatches();
               showSearch(
                 context: context,
                 delegate: MatchSearchDelegate(matches),
@@ -71,15 +90,14 @@ class MatchScreen extends StatelessWidget {
         ],
       ),
       body: FutureBuilder<List<Match>>(
-        future: loadMatchesForYear(year),
+        future: loadAllMatches(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(
-                child: Text('No hay partidos disponibles para este año.'));
+            return const Center(child: Text('No hay partidos disponibles.'));
           } else {
             List<Match> matches = snapshot.data!;
             return Scrollbar(
